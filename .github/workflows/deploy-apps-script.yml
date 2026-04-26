@@ -1,0 +1,51 @@
+name: Deploy Apps Script
+
+on:
+  push:
+    branches: [main]
+    paths: [apps-script/**]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install clasp
+        run: npm install -g @google/clasp
+
+      - name: Validate clasp credentials
+        run: |
+          echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
+          if ! npx @google/clasp list > /dev/null 2>&1; then
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "❌  CLASP CREDENTIALS EXPIRED"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "To fix:"
+            echo "  1. Run locally:  npx @google/clasp login"
+            echo "  2. Copy output:  cat ~/.clasprc.json | pbcopy"
+            echo "  3. Update secret CLASPRC_JSON in repo Settings → Secrets"
+            echo "  4. Re-run this workflow"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            exit 1
+          fi
+          echo "✅ clasp credentials valid"
+
+      - name: Install dependencies
+        working-directory: apps-script
+        run: npm install
+
+      - name: Compile TypeScript
+        working-directory: apps-script
+        run: npm run build
+
+      - name: Push to Apps Script
+        working-directory: apps-script
+        run: npx clasp push --force

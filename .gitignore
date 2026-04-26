@@ -1,0 +1,81 @@
+# =============================================================================
+# SECRETS — never commit these
+# =============================================================================
+.env
+.env.local
+.env.*.local
+.clasprc.json          # Google OAuth token — store in GHA secret, not repo
+
+
+# =============================================================================
+# FRONTEND — Svelte + Vite
+# =============================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/.svelte-kit/
+frontend/.vite/
+frontend/build/
+
+# Vite cache
+frontend/.vite-cache/
+
+# TypeScript
+frontend/tsconfig.tsbuildinfo
+
+
+# =============================================================================
+# APPS SCRIPT — clasp + TypeScript
+# =============================================================================
+apps-script/node_modules/
+apps-script/dist/         # compiled JS output before clasp push
+
+# clasp auth (project-level, if it exists alongside ~/.clasprc.json)
+apps-script/.clasprc.json
+
+
+# =============================================================================
+# EDITOR & OS
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json   # keep shared extension recommendations
+
+# JetBrains / IntelliJ
+.idea/
+*.iml
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+
+
+# =============================================================================
+# NODE
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+.yarn/
+
+
+# =============================================================================
+# MISC
+# =============================================================================
+*.log
+.cache/
+PLAN.md
