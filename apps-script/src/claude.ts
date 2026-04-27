@@ -25,37 +25,36 @@ Do not guess the payment method — always return null for payment.
 Return only the JSON object, no markdown, no explanation.`;
 
 function extractReceiptWithClaude(base64Image: string, mimeType: string, categories: string[]): ReceiptData {
-  const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
-  if (!apiKey) throw new Error('CLAUDE_API_KEY not set in Script Properties');
+  const apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  if (!apiKey) throw new Error('GEMINI_API_KEY not set in Script Properties');
 
   const prompt = RECEIPT_PROMPT_PREFIX + categories.join(', ') + RECEIPT_PROMPT_SUFFIX;
 
-  const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
-    method: 'post',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    payload: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Image } },
-          { type: 'text', text: prompt },
-        ],
-      }],
-    }),
-    muteHttpExceptions: true,
-  });
+  const response = UrlFetchApp.fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'post',
+      headers: { 'content-type': 'application/json' },
+      payload: JSON.stringify({
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: mimeType, data: base64Image } },
+            { text: prompt },
+          ],
+        }],
+        generationConfig: { temperature: 0 },
+      }),
+      muteHttpExceptions: true,
+    }
+  );
 
   const status = response.getResponseCode();
   if (status !== 200) {
-    throw new Error(`Claude API error ${status}: ${response.getContentText()}`);
+    throw new Error(`Gemini API error ${status}: ${response.getContentText()}`);
   }
 
   const body = JSON.parse(response.getContentText());
-  return JSON.parse(body.content[0].text.trim()) as ReceiptData;
+  const text = body.candidates[0].content.parts[0].text.trim()
+    .replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+  return JSON.parse(text) as ReceiptData;
 }
