@@ -31,7 +31,7 @@ function extractReceiptWithClaude(base64Image: string, mimeType: string, categor
   const prompt = RECEIPT_PROMPT_PREFIX + categories.join(', ') + RECEIPT_PROMPT_SUFFIX;
 
   const response = UrlFetchApp.fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
     {
       method: 'post',
       headers: { 'content-type': 'application/json' },
