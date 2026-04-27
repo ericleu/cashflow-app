@@ -36,13 +36,26 @@ async function call<T>(action: string, payload?: Record<string, unknown>, date?:
   };
   if (payload !== undefined) body.payload = date ? { ...payload, date } : payload;
 
+  console.debug('[api] →', action, { url: SCRIPT_URL, body });
+
   // No Content-Type header → browser sends text/plain → CORS simple request, no preflight
   const res = await fetch(SCRIPT_URL, {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
-  const json = await res.json() as { ok: boolean; data?: T; error?: string };
+  console.debug('[api] ← status', res.status, res.headers.get('content-type'));
+
+  const text = await res.text();
+  console.debug('[api] ← body', text);
+
+  let json: { ok: boolean; data?: T; error?: string };
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Non-JSON response (${res.status}): ${text.slice(0, 200)}`);
+  }
+
   if (!json.ok) throw new Error(json.error ?? 'Unknown error');
   return json.data as T;
 }
