@@ -7,7 +7,7 @@
 
   $: entry = $savedEntry ?? ($pendingEntry as SavedEntry);
 
-  let payment = entry?.payment ?? '';
+  $: payment = entry?.payment ?? '';
   let savingPayment = false;
   let deleting = false;
   let error = '';
@@ -19,7 +19,6 @@
     try {
       const result = await updateEntry(entry.rowId, { payment }, entry.date);
       savedEntry.set(result.entry);
-      payment = result.entry.payment;
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to save payment';
     } finally {

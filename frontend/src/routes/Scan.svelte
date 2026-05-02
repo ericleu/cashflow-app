@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { route, pendingEntry, pendingReceiptData, pendingImage, activeDate, dropdowns } from '../lib/store';
+  import { route, savedEntry, pendingEntry, pendingReceiptData, pendingImage, activeDate, dropdowns } from '../lib/store';
   import { extractReceipt, toApiDate, todayHtml } from '../lib/api';
 
   let saveReceipt = true;
@@ -21,6 +21,7 @@
       const result = await extractReceipt(image.base64Image, image.mimeType, saveReceipt, date);
 
       if (result.autoSaved && result.entry) {
+        savedEntry.set(result.entry);
         pendingEntry.set(result.entry);
         route.set('audit');
       } else if (result.receiptData) {

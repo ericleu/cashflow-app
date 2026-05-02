@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { route, dropdowns, activeDate, pendingEntry, pendingImage, entryMode, savedEntry } from '../lib/store';
+  import { route, dropdowns, activeDate, pendingEntry, pendingImage, entryMode, savedEntry, pendingReceiptData } from '../lib/store';
   import { getDropdowns, todayHtml, toApiDate } from '../lib/api';
   import { clearToken } from '../lib/auth';
   import { openCamera, openFilePicker } from '../lib/camera';
@@ -25,6 +25,9 @@
   async function takePhoto() {
     const image = await openCamera();
     if (!image) return;
+    savedEntry.set(null);
+    pendingEntry.set({});
+    pendingReceiptData.set(null);
     pendingImage.set(image);
     route.set('scan');
   }
@@ -32,6 +35,9 @@
   async function choosePhoto() {
     const image = await openFilePicker();
     if (!image) return;
+    savedEntry.set(null);
+    pendingEntry.set({});
+    pendingReceiptData.set(null);
     pendingImage.set(image);
     route.set('scan');
   }
