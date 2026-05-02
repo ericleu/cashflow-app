@@ -24,11 +24,15 @@ If you cannot read a field clearly, return null for that field.
 Do not guess the payment method — always return null for payment.
 Return only the JSON object, no markdown, no explanation.`;
 
-function extractReceiptWithClaude(base64Image: string, mimeType: string, categories: string[]): ReceiptData {
+function extractReceiptWithClaude(base64Image: string, mimeType: string, categories: string[], rules: string[]): ReceiptData {
   const apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
   if (!apiKey) throw new Error('GEMINI_API_KEY not set in Script Properties');
 
-  const prompt = RECEIPT_PROMPT_PREFIX + categories.join(', ') + RECEIPT_PROMPT_SUFFIX;
+  const rulesBlock = rules.length > 0
+    ? `\n\nSpecial rules (apply these when conditions match):\n${rules.map(r => `- ${r}`).join('\n')}`
+    : '';
+
+  const prompt = RECEIPT_PROMPT_PREFIX + categories.join(', ') + rulesBlock + RECEIPT_PROMPT_SUFFIX;
 
   const response = UrlFetchApp.fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,

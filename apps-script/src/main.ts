@@ -16,7 +16,8 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
       case 'extractReceipt': {
         const { base64Image, mimeType } = payload;
         const dropdowns = getDropdowns(date);
-        const receiptData = extractReceiptWithClaude(base64Image, mimeType, dropdowns.categories);
+        const rules = getAIRules(date);
+        const receiptData = extractReceiptWithClaude(base64Image, mimeType, dropdowns.categories, rules);
 
         const allPresent = receiptData.date && receiptData.amount != null && receiptData.suggestedCategory;
 
@@ -30,9 +31,8 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
             description: receiptData.description || '',
             amount: receiptData.amount!,
             category: receiptData.suggestedCategory!,
-            payment: '',
+            payment: dropdowns.payments[0] ?? '',
             receiptUrl,
-            needsVerification: true,
           }, date);
 
           return corsResponse({ ok: true, data: { autoSaved: true, entry } });

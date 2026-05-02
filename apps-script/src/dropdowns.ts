@@ -24,3 +24,23 @@ function getDropdowns(date: Date): Dropdowns {
 
   return { categories, payments, tags };
 }
+
+function getAIRules(date: Date): string[] {
+  const sheetId = getCashSheetID(date);
+  const ss = SpreadsheetApp.openById(sheetId);
+  const sheet = ss.getSheetByName('AI rules');
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const rules: string[] = [];
+
+  for (const row of data) {
+    const condition = row[0] ? String(row[0]).trim() : '';
+    const category = row[1] ? String(row[1]).trim() : '';
+    if (condition && category) {
+      rules.push(`If ${condition} → use category "${category}"`);
+    }
+  }
+
+  return rules;
+}
