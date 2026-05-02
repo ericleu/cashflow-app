@@ -36,12 +36,10 @@ function extractReceiptWithClaude(base64Image: string, mimeType: string, categor
       method: 'post',
       headers: { 'content-type': 'application/json' },
       payload: JSON.stringify({
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: mimeType, data: base64Image } },
-            { text: prompt },
-          ],
-        }],
+        contents: [{ parts: [
+          { inline_data: { mime_type: mimeType, data: base64Image } },
+          { text: prompt },
+        ]}],
         generationConfig: { temperature: 0 },
       }),
       muteHttpExceptions: true,

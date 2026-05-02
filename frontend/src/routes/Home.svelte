@@ -2,7 +2,7 @@
   import { route, dropdowns, activeDate, pendingEntry, pendingImage, entryMode, savedEntry } from '../lib/store';
   import { getDropdowns, todayHtml, toApiDate } from '../lib/api';
   import { clearToken } from '../lib/auth';
-  import { openFilePicker } from '../lib/camera';
+  import { openCamera, openFilePicker } from '../lib/camera';
 
   let loading = false;
   let error = '';
@@ -22,23 +22,25 @@
 
   if (!$dropdowns) refreshDropdowns();
 
-  function goScan() {
-    pendingImage.set(null);
+  async function takePhoto() {
+    const image = await openCamera();
+    if (!image) return;
+    pendingImage.set(image);
     route.set('scan');
   }
 
-  async function goAddManual() {
+  async function choosePhoto() {
     const image = await openFilePicker();
-    pendingEntry.set({});
+    if (!image) return;
     pendingImage.set(image);
-    entryMode.set('add');
-    route.set('entry');
+    route.set('scan');
   }
 
   function goAddEmpty() {
     pendingEntry.set({});
     pendingImage.set(null);
     entryMode.set('add');
+    savedEntry.set(null);
     route.set('entry');
   }
 
@@ -65,16 +67,28 @@
       <button class="btn-secondary" on:click={refreshDropdowns}>Retry</button>
     {:else}
       <div style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
-        <button class="btn-primary" style="padding: 20px; font-size: 18px;" on:click={goScan}>
-          📷  Scan Receipt
+        <button
+          class="btn-secondary"
+          style="padding: 24px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px;"
+          on:click={goAddEmpty}
+        >
+          <span style="font-size: 28px;">✏️</span> Add Manually
         </button>
 
-        <button class="btn-secondary" style="padding: 20px; font-size: 18px;" on:click={goAddManual}>
-          🖼  Attach Photo + Add Entry
+        <button
+          class="btn-secondary"
+          style="padding: 24px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px;"
+          on:click={choosePhoto}
+        >
+          <span style="font-size: 28px;">🖼</span> Choose Photo
         </button>
 
-        <button class="btn-secondary" style="padding: 20px; font-size: 18px;" on:click={goAddEmpty}>
-          ✏️  Add Entry Manually
+        <button
+          class="btn-primary"
+          style="padding: 24px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px;"
+          on:click={takePhoto}
+        >
+          <span style="font-size: 28px;">📷</span> Take Photo
         </button>
       </div>
     {/if}
