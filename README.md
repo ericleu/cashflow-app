@@ -8,7 +8,7 @@ Built as a mobile-optimised web app accessible at `cashflow.yourdomain.com`.
 
 ## Features
 
-- **Receipt scanning** — take a photo or pick from your library; Claude Vision extracts merchant, date, amount, and category automatically
+- **Receipt scanning** — take a photo or pick from your library; Gemini Vision extracts merchant, date, amount, and category automatically
 - **Manual entry** — full form for digital payments, cash, or anything without a paper receipt
 - **Audit screen** — every save shows a confirmation screen with edit and delete options
 - **Google Sheets backend** — all data stored in your existing yearly Cash Flow spreadsheets; auditable and editable directly in Sheets
@@ -23,7 +23,7 @@ Built as a mobile-optimised web app accessible at `cashflow.yourdomain.com`.
 |---|---|
 | Frontend | Svelte + Vite, hosted on GitHub Pages |
 | Backend | Google Apps Script (TypeScript via clasp) |
-| OCR | Claude API — Haiku 4.5 model |
+| OCR | Gemini API — gemini-2.0-flash-lite |
 | Data | Google Sheets (one sheet per year) |
 | Photos | Google Drive (`receipts/` folder per year) |
 | Domain | `cashflow.yourdomain.com` via CNAME |
@@ -87,7 +87,7 @@ Set these manually in the Apps Script editor under **Project Settings → Script
 | Property Key | Value | Set By | Notes |
 |---|---|---|---|
 | `AUTH_TOKEN` | Shared secret string | Manual (once) | Must match what users enter on first login |
-| `CLAUDE_API_KEY` | Anthropic API key | Manual (once) | Never exposed to frontend |
+| `GEMINI_API_KEY` | Google AI Studio API key | Manual (once) | From AI Studio — cashflow-app GCP project; never exposed to frontend |
 | `CASHFLOW_FOLDER_ID` | Google Drive folder ID | Manual (once) | ID of the `Cash flow` parent folder — from its Drive URL |
 | `sheetId_{year}` | Google Sheet ID | Auto-populated | Discovered on first request per year, persists forever. e.g. `sheetId_2026` |
 
@@ -96,7 +96,7 @@ Set these manually in the Apps Script editor under **Project Settings → Script
 https://drive.google.com/drive/folders/[CASHFLOW_FOLDER_ID]
 ```
 
-**To get your Anthropic API key:** visit [console.anthropic.com](https://console.anthropic.com)
+**To get your Gemini API key:** go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → create a key under the cashflow-app GCP project. Requires a paid billing account (prepay minimum $10) to avoid free-tier quota limits.
 
 ---
 
@@ -108,6 +108,7 @@ Set these under **Repo Settings → Secrets and Variables → Actions**.
 |---|---|---|---|
 | `APPS_SCRIPT_URL` | `https://script.google.com/macros/s/xxx/exec` | Frontend build | Baked into Svelte bundle at compile time |
 | `CLASPRC_JSON` | Contents of `~/.clasprc.json` | Apps Script deploy | OAuth token for `clasp push`; see below for setup |
+| `CUSTOM_DOMAIN` | Your custom domain | Frontend build | Written to `CNAME` at build time; keeps domain out of source code |
 
 **To generate `CLASPRC_JSON`:**
 ```bash

@@ -20,7 +20,7 @@ Google       Google
 Sheets       Drive
 (data)      (photos)
     ▲
-Claude API
+Gemini API
 (Vision OCR)
 ```
 
@@ -39,8 +39,8 @@ Svelte + Vite. Compiles to vanilla JS with no runtime framework overhead. Output
 | File | Responsibility |
 |---|---|
 | `App.svelte` | Root component, routing |
-| `routes/Home.svelte` | Home screen — two entry points |
-| `routes/Scan.svelte` | File picker, image preview, processing state |
+| `routes/Home.svelte` | Home screen — Take Photo, Choose Photo, Add Manually |
+| `routes/Scan.svelte` | Receipt preview, auto-scans on mount, loading state |
 | `routes/Entry.svelte` | Shared form — used for manual entry and scan fallback |
 | `routes/Audit.svelte` | Confirmation screen with edit / delete |
 | `lib/api.ts` | All fetch calls to Apps Script |
@@ -113,7 +113,7 @@ Every response:
 | `dropdowns.ts` | `getDropdowns()` — reads `drop down list` sheet tab |
 | `sheets.ts` | `addEntry()`, `updateEntry()`, `deleteEntry()` |
 | `drive.ts` | `addReceipt()` — uploads photo to Drive, returns file ID |
-| `claude.ts` | `extractReceiptWithClaude()` — calls Claude Vision API |
+| `claude.ts` | `extractReceiptWithClaude()` — calls Gemini Vision API |
 
 ### Deployment
 - Deployed via `clasp push` from GitHub Actions
@@ -177,7 +177,7 @@ Frontend
   → POSTs to Apps Script (action: extractReceipt)
 
 Apps Script (claude.ts)
-  → calls Claude API (Haiku 4.5 — lowest cost, sufficient for receipts)
+  → calls Gemini API (gemini-2.0-flash-lite — lowest cost, sufficient for receipts)
   → sends base64 image + structured prompt
   → prompt includes full category list for accurate matching
   → returns JSON: { date, description, amount, suggestedCategory }
@@ -195,7 +195,7 @@ Frontend
   → if fallback:   shows Entry form pre-populated, user completes and saves
 ```
 
-**Cost**: ~$0.38/month at ~150 receipts/month using Haiku 4.5.
+**Cost**: ~$0.04/month at ~150 receipts/month using gemini-2.0-flash-lite (~$0.075/1M input tokens).
 
 ---
 

@@ -10,7 +10,7 @@ This is a private personal project. This document covers local development setup
 - npm
 - `clasp` (Google Apps Script CLI)
 - A Google account with access to the Cash Flow Drive folder and Sheets
-- An Anthropic API key (for Claude Vision)
+- A Google AI Studio API key (for Gemini Vision) — requires paid billing on the cashflow-app GCP project
 
 ---
 
@@ -138,7 +138,7 @@ After first push, set Script Properties in the Apps Script editor:
 | Property | Value |
 |---|---|
 | `AUTH_TOKEN` | Your chosen shared secret |
-| `CLAUDE_API_KEY` | Your Anthropic API key |
+| `GEMINI_API_KEY` | Your Google AI Studio API key (cashflow-app GCP project) |
 | `CASHFLOW_FOLDER_ID` | Google Drive folder ID of the `Cash flow` parent folder |
 
 `sheetId_{year}` properties are auto-populated on first use — do not set manually.
@@ -162,6 +162,7 @@ Required for CI/CD. Set under **Repo Settings → Secrets and Variables → Acti
 |---|---|
 | `APPS_SCRIPT_URL` | Apps Script deployment URL (from Deploy step above) |
 | `CLASPRC_JSON` | Run `cat ~/.clasprc.json` after `clasp login` |
+| `CUSTOM_DOMAIN` | Your custom domain (e.g. `cashflow.yourdomain.com`) — written to `CNAME` at build time |
 
 ---
 
