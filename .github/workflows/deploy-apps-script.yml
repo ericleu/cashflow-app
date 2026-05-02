@@ -9,9 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
 
@@ -45,6 +45,10 @@ jobs:
       - name: Compile TypeScript
         working-directory: apps-script
         run: npm run build
+
+      - name: Verify compiled output
+        working-directory: apps-script
+        run: grep -m1 "generativelanguage" dist/claude.js
 
       - name: Push to Apps Script
         working-directory: apps-script
