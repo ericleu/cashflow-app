@@ -94,7 +94,7 @@ Push to `main`. GitHub Actions builds and deploys automatically. Done.
 |---|---|
 | Frontend | Svelte + Vite, hosted on GitHub Pages |
 | Backend | Google Apps Script (TypeScript via clasp) |
-| OCR | Gemini API — gemini-2.0-flash-lite |
+| OCR | Gemini API — gemini-2.5-flash |
 | Data | Google Sheets (one sheet per year) |
 | Photos | Google Drive (`receipts/` folder per year) |
 | Domain | `cashflow.yourdomain.com` via CNAME |

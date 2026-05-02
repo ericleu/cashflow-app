@@ -177,7 +177,7 @@ Frontend
   → POSTs to Apps Script (action: extractReceipt)
 
 Apps Script (claude.ts)
-  → calls Gemini API (gemini-2.0-flash-lite — lowest cost, sufficient for receipts)
+  → calls Gemini API (gemini-2.5-flash — sufficient for receipts)
   → sends base64 image + structured prompt
   → prompt includes full category list for accurate matching
   → returns JSON: { date, description, amount, suggestedCategory }
@@ -195,7 +195,7 @@ Frontend
   → if fallback:   shows Entry form pre-populated, user completes and saves
 ```
 
-**Cost**: ~$0.04/month at ~150 receipts/month using gemini-2.0-flash-lite (~$0.075/1M input tokens).
+**Cost**: negligible at personal-use scale using gemini-2.5-flash.
 
 ---
 
