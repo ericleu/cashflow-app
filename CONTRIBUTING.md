@@ -6,7 +6,7 @@ This is a private personal project. This document covers local development setup
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 24+
 - npm
 - `clasp` (Google Apps Script CLI)
 - A Google account with access to the Cash Flow Drive folder and Sheets
