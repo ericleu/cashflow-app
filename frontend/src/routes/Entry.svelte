@@ -135,7 +135,7 @@
                 background: {selectedTab === tab ? 'var(--green)' : 'var(--surface)'};
                 color: {selectedTab === tab ? '#fff' : 'var(--text)'};
                 border: 1px solid var(--border);"
-              on:click={() => { selectedTab = tab; category = ''; }}
+              on:click={() => { selectedTab = tab; category = categories.filter(c => c.startsWith(tab))[0] ?? ''; }}
             >
               {tab}
             </button>
