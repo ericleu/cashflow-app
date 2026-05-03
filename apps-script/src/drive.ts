@@ -1,4 +1,16 @@
-function addReceipt(base64Data: string, mimeType: string, date: Date): string {
+function addReceipt(base64Data: string, mimeType: string, date: Date, retries = 3): string {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return addReceiptOnce(base64Data, mimeType, date);
+    } catch (e) {
+      if (attempt === retries) throw e;
+      Utilities.sleep(1000 * attempt);
+    }
+  }
+  throw new Error('addReceipt failed after retries');
+}
+
+function addReceiptOnce(base64Data: string, mimeType: string, date: Date): string {
   const sheetId = getCashSheetID(date);
   const receiptsFolderId = getOrCreateReceiptsFolder(sheetId, date);
 

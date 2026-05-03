@@ -1,15 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { route, savedEntry, pendingEntry, pendingReceiptData, pendingImage, activeDate, dropdowns } from '../lib/store';
+  import { route, savedEntry, pendingEntry, pendingReceiptData, pendingImage, activeDate } from '../lib/store';
   import { extractReceipt, toApiDate, todayHtml } from '../lib/api';
 
-  let saveReceipt = true;
   let loading = false;
   let error = '';
 
   const image = $pendingImage;
 
-  // If we arrived here without an image, go back
   if (!image) route.set('home');
 
   async function scan() {
@@ -18,7 +16,7 @@
     error = '';
     try {
       const date = $activeDate || toApiDate(todayHtml());
-      const result = await extractReceipt(image.base64Image, image.mimeType, saveReceipt, date);
+      const result = await extractReceipt(image.base64Image, image.mimeType, date);
 
       if (result.autoSaved && result.entry) {
         savedEntry.set(result.entry);
@@ -31,7 +29,7 @@
           description: rd.description ?? '',
           amount: rd.amount ?? undefined,
           category: rd.suggestedCategory ?? undefined,
-          payment: '',
+          payment: rd.suggestedPayment ?? '',
         });
         pendingReceiptData.set(rd);
         route.set('entry');
@@ -65,13 +63,6 @@
     {:else if error}
       <p style="color: var(--red);">{error}</p>
       <button class="btn-primary" on:click={scan}>Try Again</button>
-    {/if}
-
-    {#if !loading}
-      <label style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
-        <input type="checkbox" bind:checked={saveReceipt} style="width: auto;" />
-        Save receipt photo to Drive
-      </label>
     {/if}
   </div>
 </div>

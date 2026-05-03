@@ -17,21 +17,20 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
         const { base64Image, mimeType } = payload;
         const dropdowns = getDropdowns(date);
         const rules = getAIRules(date);
-        const receiptData = extractReceiptWithClaude(base64Image, mimeType, dropdowns.categories, rules);
+        const cardMap = getCardMap(date);
+        const receiptData = extractReceiptWithClaude(base64Image, mimeType, dropdowns.categories, dropdowns.payments, rules, cardMap);
 
         const allPresent = receiptData.date && receiptData.amount != null && receiptData.suggestedCategory;
 
         if (allPresent) {
-          const receiptUrl = payload.saveReceipt
-            ? addReceipt(base64Image, mimeType, date)
-            : undefined;
+          const receiptUrl = addReceipt(base64Image, mimeType, date);
 
           const entry = addEntry({
             date: receiptData.date!,
             description: receiptData.description || '',
             amount: receiptData.amount!,
             category: receiptData.suggestedCategory!,
-            payment: dropdowns.payments[0] ?? '',
+            payment: receiptData.suggestedPayment ?? dropdowns.payments[0] ?? '',
             receiptUrl,
           }, date);
 

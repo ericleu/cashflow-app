@@ -27,6 +27,7 @@ export interface ReceiptData {
   description: string | null;
   amount: number | null;
   suggestedCategory: string | null;
+  suggestedPayment: string | null;
 }
 
 async function call<T>(action: string, payload?: Record<string, unknown>, date?: string): Promise<T> {
@@ -54,10 +55,9 @@ export function getDropdowns(date: string): Promise<Dropdowns> {
 export function extractReceipt(
   base64Image: string,
   mimeType: string,
-  saveReceipt: boolean,
   date: string,
 ): Promise<{ autoSaved: boolean; entry?: SavedEntry; receiptData?: ReceiptData }> {
-  return call('extractReceipt', { base64Image, mimeType, saveReceipt }, date);
+  return call('extractReceipt', { base64Image, mimeType }, date);
 }
 
 export function addEntry(entry: EntryPayload, date: string): Promise<{ entry: SavedEntry }> {

@@ -25,6 +25,26 @@ function getDropdowns(date: Date): Dropdowns {
   return { categories, payments, tags };
 }
 
+function getCardMap(date: Date): string[] {
+  const sheetId = getCashSheetID(date);
+  const ss = SpreadsheetApp.openById(sheetId);
+  const sheet = ss.getSheetByName('card map');
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const mappings: string[] = [];
+
+  for (const row of data) {
+    const digits = row[0] ? String(row[0]).trim() : '';
+    const payment = row[1] ? String(row[1]).trim() : '';
+    if (digits && payment) {
+      mappings.push(`card ending in ${digits} → "${payment}"`);
+    }
+  }
+
+  return mappings;
+}
+
 function getAIRules(date: Date): string[] {
   const sheetId = getCashSheetID(date);
   const ss = SpreadsheetApp.openById(sheetId);
