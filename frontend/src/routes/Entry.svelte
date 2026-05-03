@@ -165,8 +165,11 @@
     {/if}
   </div>
 
-  <div class="screen-footer">
-    <button class="btn-primary" on:click={save} disabled={loading}>
+  <div class="screen-footer" style="display: flex; gap: 8px;">
+    <button class="btn-secondary" style="flex: 1;" on:click={back} disabled={loading}>
+      Cancel
+    </button>
+    <button class="btn-primary" style="flex: 1;" on:click={save} disabled={loading}>
       {loading ? 'Saving…' : 'Save Entry'}
     </button>
   </div>
