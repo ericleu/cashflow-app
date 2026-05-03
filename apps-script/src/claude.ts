@@ -17,7 +17,7 @@ Extract the following and return ONLY valid JSON, no other text:
   "suggestedPayment": "Zelle"
 }
 
-Match suggestedCategory to the closest item from this list:
+Match suggestedCategory to the closest item from this list (unless a mandatory override rule applies — see below):
 `;
 
 const RECEIPT_PROMPT_PAYMENTS_PREFIX = `
@@ -40,7 +40,7 @@ function extractReceiptWithClaude(base64Image: string, mimeType: string, categor
     : '';
 
   const rulesBlock = rules.length > 0
-    ? `\n\nSpecial rules (apply these when conditions match):\n${rules.map(r => `- ${r}`).join('\n')}`
+    ? `\n\nMANDATORY CATEGORY OVERRIDES — These take strict priority over the category list above. When the receipt matches a condition below, you MUST use exactly the specified category string — do not fall back to closest-match:\n${rules.map(r => `- ${r}`).join('\n')}`
     : '';
 
   const prompt = RECEIPT_PROMPT_PREFIX + categories.join(', ')
