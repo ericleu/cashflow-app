@@ -89,5 +89,25 @@ function extractReceiptWithClaude(base64Image: string, mimeType: string, categor
   const body = JSON.parse(response.getContentText());
   const text = body.candidates[0].content.parts[0].text.trim()
     .replace(/^```json\s*/i, '').replace(/```$/, '').trim();
-  return JSON.parse(text) as ReceiptData;
+  const parsed = JSON.parse(text);
+
+  // Gemini sometimes returns items: null or items: [] despite prompt instructions.
+  // Fall back to top-level fields (old flat format) so auto-save still works.
+  if (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) {
+    parsed.items = [{
+      description: parsed.description ?? null,
+      amount: parsed.amount ?? parsed.totalAmount ?? null,
+      suggestedCategory: parsed.suggestedCategory ?? null,
+    }];
+  }
+  if (parsed.totalAmount == null) {
+    parsed.totalAmount = parsed.amount ?? null;
+  }
+
+  // Patch null fields in items[0] from top-level fallbacks (mixed-format responses).
+  const item0 = parsed.items[0];
+  if (item0.amount == null) item0.amount = parsed.amount ?? parsed.totalAmount ?? null;
+  if (!item0.suggestedCategory) item0.suggestedCategory = parsed.suggestedCategory ?? null;
+
+  return parsed as ReceiptData;
 }

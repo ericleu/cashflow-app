@@ -108,7 +108,7 @@ Every response:
 
 | File | Exports |
 |---|---|
-| `main.ts` | `doPost(e)` — validates auth, routes action |
+| `main.ts` | `doPost(e)` — validates auth, routes action; `addSplitEntries` saves multiple rows from one receipt |
 | `config.ts` | `isAuthorized()`, `corsResponse()`, `getCashSheetID()` |
 | `dropdowns.ts` | `getDropdowns()`, `getAIRules()`, `getCardMap()` — reads sheet tabs |
 | `sheets.ts` | `addEntry()`, `updateEntry()`, `deleteEntry()` |
@@ -197,20 +197,18 @@ Apps Script (claude.ts)
       - full category list for category matching
       - full payment list + card map for payment detection
       - AI rules for mandatory field overrides (any field: category, amount, description, payment)
-  → returns JSON: { date, description, amount, suggestedCategory, suggestedPayment }
+  → returns JSON: { date, description, totalAmount, suggestedPayment, items: [{ description, amount, suggestedCategory }] }
+  → items[] always has at least 1 element; splits only when clearly obvious from receipt or AI rule applies
 
 Apps Script (main.ts)
-  → always saves receipt photo to Drive (with retry on failure)
-  → if all required fields present (date, amount, category):
-      → saves entry to Sheets (payment = suggestedPayment ?? first in payments list)
-      → returns saved entry to frontend
-  → if any required field is null:
-      → returns partial data to frontend
-      → frontend shows form with missing fields highlighted
+  → single item: saves receipt to Drive; auto-saves if date + amount + category all present
+  → multiple items: saves receipt to Drive; returns all items to frontend for confirmation (never auto-saves)
+  → if required fields missing (single item): returns partial data, frontend shows entry form
 
 Frontend
-  → if auto-saved: shows Audit screen
-  → if fallback:   shows Entry form pre-populated, user completes and saves
+  → if auto-saved:   shows Audit screen (single entry)
+  → if split:        shows Split confirmation screen — editable items, sum validation, shared payment → addSplitEntries
+  → if fallback:     shows Entry form pre-populated, user completes and saves
 ```
 
 **Cost**: negligible at personal-use scale using gemini-2.5-flash.
