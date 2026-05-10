@@ -39,7 +39,7 @@ Svelte + Vite. Compiles to vanilla JS with no runtime framework overhead. Output
 | File | Responsibility |
 |---|---|
 | `App.svelte` | Root component, routing |
-| `routes/Home.svelte` | Home screen — Take Photo, Choose Photo, Add Manually |
+| `routes/Home.svelte` | Home screen — Add Manually, Choose Photo, Take Photo (stacked, one-hand UX) |
 | `routes/Scan.svelte` | Receipt preview, auto-scans on mount, loading state |
 | `routes/Entry.svelte` | Shared form — used for manual entry and scan fallback |
 | `routes/Audit.svelte` | Confirmation screen with edit / delete |
@@ -110,16 +110,16 @@ Every response:
 |---|---|
 | `main.ts` | `doPost(e)` — validates auth, routes action |
 | `config.ts` | `isAuthorized()`, `corsResponse()`, `getCashSheetID()` |
-| `dropdowns.ts` | `getDropdowns()` — reads `drop down list` sheet tab |
+| `dropdowns.ts` | `getDropdowns()`, `getAIRules()`, `getCardMap()` — reads sheet tabs |
 | `sheets.ts` | `addEntry()`, `updateEntry()`, `deleteEntry()` |
-| `drive.ts` | `addReceipt()` — uploads photo to Drive, returns file ID |
+| `drive.ts` | `addReceipt()` — uploads photo to Drive with retry, returns file URL |
 | `claude.ts` | `extractReceiptWithClaude()` — calls Gemini Vision API |
 
 ### Deployment
 - Deployed via `clasp push` from GitHub Actions
 - Execute as: **Me** (owner's Google account)
 - Access: **Anyone** (auth token provides the security layer)
-- Served at `@HEAD` — always runs the latest pushed code, no versioning required
+- After each `clasp push`, a new deployment version must be created manually in the Apps Script editor (Deploy → Manage deployments → Edit → New version)
 
 ---
 
@@ -145,8 +145,23 @@ One spreadsheet per year, stored in Google Drive under a consistent folder struc
 | Col | Content |
 |---|---|
 | A | All category values (grouped by 食衣住行育樂收入金融無) |
-| B | All payment method values |
+| B | All payment method values (first entry = default on auto-save) |
 | C | Tag values (trip/person labels) |
+
+**Sheet: `AI rules` tab** — custom rules injected into the Gemini prompt at runtime; highest priority, overrides AI assessment for any field
+
+| Col A — condition | Col B — instruction |
+|---|---|
+| gas receipt with premium or 91+ octane | use category "行 - Fuel (NX)" |
+| restaurant receipt with a handwritten amount | use the handwritten total as the amount, not the printed subtotal |
+
+Column B is free-form natural language — it can override any field (category, amount, description, payment). Add or edit rows in the sheet to change behavior; no code change or redeployment required.
+
+**Sheet: `card map` tab** — maps card last 4 digits to payment method for receipt recognition
+
+| Col A — last 4 digits | Col B — payment method |
+|---|---|
+| 1234 | Apple Card |
 
 ### Row Insertion
 New entries are inserted **before** the first row containing a Date value in column A. This keeps the most recent entries at the top while preserving fixed placeholder rows at the top of the sheet.
@@ -177,14 +192,17 @@ Frontend
   → POSTs to Apps Script (action: extractReceipt)
 
 Apps Script (claude.ts)
-  → calls Gemini API (gemini-2.5-flash — sufficient for receipts)
-  → sends base64 image + structured prompt
-  → prompt includes full category list for accurate matching
-  → returns JSON: { date, description, amount, suggestedCategory }
+  → calls Gemini API (gemini-2.5-flash)
+  → sends base64 image + structured prompt containing:
+      - full category list for category matching
+      - full payment list + card map for payment detection
+      - AI rules for mandatory field overrides (any field: category, amount, description, payment)
+  → returns JSON: { date, description, amount, suggestedCategory, suggestedPayment }
 
 Apps Script (main.ts)
+  → always saves receipt photo to Drive (with retry on failure)
   → if all required fields present (date, amount, category):
-      → saves entry to Sheets immediately
+      → saves entry to Sheets (payment = suggestedPayment ?? first in payments list)
       → returns saved entry to frontend
   → if any required field is null:
       → returns partial data to frontend
