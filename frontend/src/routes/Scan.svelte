@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { route, savedEntry, pendingEntry, pendingReceiptData, pendingImage, activeDate } from '../lib/store';
+  import { route, savedEntry, pendingEntry, pendingReceiptData, pendingSplitData, pendingImage, activeDate } from '../lib/store';
   import { extractReceipt, toApiDate, todayHtml } from '../lib/api';
 
   let loading = false;
@@ -22,13 +22,17 @@
         savedEntry.set(result.entry);
         pendingEntry.set(result.entry);
         route.set('audit');
+      } else if (result.split && result.receiptData) {
+        pendingSplitData.set(result.receiptData);
+        route.set('audit');
       } else if (result.receiptData) {
         const rd = result.receiptData;
+        const firstItem = rd.items?.[0];
         pendingEntry.set({
           date: rd.date ?? undefined,
           description: rd.description ?? '',
-          amount: rd.amount ?? undefined,
-          category: rd.suggestedCategory ?? undefined,
+          amount: firstItem?.amount ?? undefined,
+          category: firstItem?.suggestedCategory ?? undefined,
           payment: rd.suggestedPayment ?? '',
         });
         pendingReceiptData.set(rd);

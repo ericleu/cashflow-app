@@ -1,9 +1,15 @@
-interface ReceiptData {
-  date: string | null;
+interface LineItem {
   description: string | null;
   amount: number | null;
   suggestedCategory: string | null;
+}
+
+interface ReceiptData {
+  date: string | null;
+  description: string | null;
+  totalAmount: number | null;
   suggestedPayment: string | null;
+  items: LineItem[];
 }
 
 const RECEIPT_PROMPT_PREFIX = `You are parsing a receipt image for an expense tracking app.
@@ -12,12 +18,21 @@ Extract the following and return ONLY valid JSON, no other text:
 {
   "date": "MM/DD/YYYY",
   "description": "merchant name",
-  "amount": 47.23,
-  "suggestedCategory": "食 - Groceries",
-  "suggestedPayment": "Zelle"
+  "totalAmount": 47.23,
+  "suggestedPayment": "Zelle",
+  "items": [
+    { "description": "item group description", "amount": 47.23, "suggestedCategory": "食 - Groceries" }
+  ]
 }
 
-Match suggestedCategory to the closest item from this list (mandatory override rules below take priority):
+SPLITTING RULES — follow strictly:
+- Default to ONE item containing the full totalAmount
+- Only split into multiple items when it is clearly and unambiguously obvious that the receipt has separate amounts belonging to DIFFERENT expense categories (e.g. a membership fee line explicitly listed alongside grocery items)
+- When in doubt, do NOT split — return a single item
+- Item amounts must sum exactly to totalAmount
+- Apply mandatory override rules (see below) per item when the condition matches
+
+Match each item's suggestedCategory to the closest from this list (mandatory override rules below take priority):
 `;
 
 const RECEIPT_PROMPT_PAYMENTS_PREFIX = `
@@ -28,6 +43,7 @@ Match suggestedPayment to the closest item from this list if the payment method 
 const RECEIPT_PROMPT_SUFFIX = `
 
 If you cannot read a field clearly, return null for that field.
+Item amounts must sum exactly to totalAmount.
 Only set suggestedPayment if the payment method is clearly visible on the receipt — otherwise return null.
 Return only the JSON object, no markdown, no explanation.`;
 

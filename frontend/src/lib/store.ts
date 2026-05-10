@@ -23,5 +23,8 @@ export const pendingImage = writable<ImageCapture | null>(null);
 // Receipt data returned when auto-save was not possible
 export const pendingReceiptData = writable<ReceiptData | null>(null);
 
+// Multi-item receipt data pending split confirmation
+export const pendingSplitData = writable<ReceiptData | null>(null);
+
 // The date context used for sheet lookup (MM/DD/YYYY, defaults to today)
 export const activeDate = writable<string>('');
