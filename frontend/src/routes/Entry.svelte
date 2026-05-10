@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    route, pendingEntry, pendingImage, entryMode, savedEntry,
+    route, pendingEntry, pendingImage, entryMode, savedEntry, savedEntries,
     dropdowns, activeDate,
   } from '../lib/store';
   import { addEntry, updateEntry, toApiDate, toHtmlDate, todayHtml } from '../lib/api';
@@ -52,19 +52,23 @@
       amount: formatAmount(),
       category,
       payment,
+      needsVerification: false,
     };
 
     try {
       if ($entryMode === 'edit' && $savedEntry) {
-        // Use original date for sheet lookup
         const originalDate = $savedEntry.date;
         const result = await updateEntry($savedEntry.rowId, entry, originalDate);
         savedEntry.set(result.entry);
         pendingEntry.set(result.entry);
+        savedEntries.update(list =>
+          list.map(e => e.rowId === result.entry.rowId ? result.entry : e)
+        );
         route.set('audit');
       } else {
         const result = await addEntry(entry, apiDate);
         savedEntry.set(result.entry);
+        savedEntries.set([]);
         pendingEntry.set(result.entry);
         route.set('audit');
       }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { route, dropdowns, activeDate, pendingEntry, pendingImage, entryMode, savedEntry, pendingReceiptData } from '../lib/store';
+  import { route, dropdowns, activeDate, pendingEntry, pendingImage, entryMode, savedEntry, savedEntries } from '../lib/store';
   import { getDropdowns, todayHtml, toApiDate } from '../lib/api';
   import { clearToken } from '../lib/auth';
   import { openCamera, openFilePicker } from '../lib/camera';
@@ -22,22 +22,12 @@
 
   if (!$dropdowns) refreshDropdowns();
 
-  async function takePhoto() {
-    const image = await openCamera();
+  async function startScan(source: 'camera' | 'picker') {
+    const image = source === 'camera' ? await openCamera() : await openFilePicker();
     if (!image) return;
     savedEntry.set(null);
+    savedEntries.set([]);
     pendingEntry.set({});
-    pendingReceiptData.set(null);
-    pendingImage.set(image);
-    route.set('scan');
-  }
-
-  async function choosePhoto() {
-    const image = await openFilePicker();
-    if (!image) return;
-    savedEntry.set(null);
-    pendingEntry.set({});
-    pendingReceiptData.set(null);
     pendingImage.set(image);
     route.set('scan');
   }
@@ -47,6 +37,7 @@
     pendingImage.set(null);
     entryMode.set('add');
     savedEntry.set(null);
+    savedEntries.set([]);
     route.set('entry');
   }
 
@@ -84,7 +75,7 @@
         <button
           class="btn-secondary"
           style="padding: 24px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px;"
-          on:click={choosePhoto}
+          on:click={() => startScan('picker')}
         >
           <span style="font-size: 28px;">🖼</span> Choose Photo
         </button>
@@ -92,7 +83,7 @@
         <button
           class="btn-primary"
           style="padding: 24px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 12px;"
-          on:click={takePhoto}
+          on:click={() => startScan('camera')}
         >
           <span style="font-size: 28px;">📷</span> Take Photo
         </button>

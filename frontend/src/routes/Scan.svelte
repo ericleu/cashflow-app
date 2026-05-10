@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { route, savedEntry, pendingEntry, pendingReceiptData, pendingSplitData, pendingImage, activeDate, entryMode } from '../lib/store';
+  import { route, savedEntry, savedEntries, pendingImage, activeDate } from '../lib/store';
   import { extractReceipt, toApiDate, todayHtml } from '../lib/api';
 
   let loading = false;
@@ -17,28 +17,14 @@
     try {
       const date = $activeDate || toApiDate(todayHtml());
       const result = await extractReceipt(image.base64Image, image.mimeType, date);
-
-      if (result.autoSaved && result.entry) {
+      if (result.entries?.length) {
+        savedEntries.set(result.entries);
+        savedEntry.set(null);
+      } else if (result.entry) {
         savedEntry.set(result.entry);
-        pendingEntry.set(result.entry);
-        route.set('audit');
-      } else if (result.split && result.receiptData) {
-        pendingSplitData.set(result.receiptData);
-        route.set('audit');
-      } else if (result.receiptData) {
-        const rd = result.receiptData;
-        const firstItem = rd.items?.[0];
-        pendingEntry.set({
-          date: rd.date ?? undefined,
-          description: rd.description ?? '',
-          amount: firstItem?.amount ?? undefined,
-          category: firstItem?.suggestedCategory ?? undefined,
-          payment: rd.suggestedPayment ?? '',
-        });
-        pendingReceiptData.set(rd);
-        entryMode.set('add');
-        route.set('entry');
+        savedEntries.set([]);
       }
+      route.set('audit');
     } catch (e) {
       error = e instanceof Error ? e.message : 'Scan failed';
       loading = false;

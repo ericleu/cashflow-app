@@ -16,34 +16,44 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
       case 'extractReceipt': {
         const { base64Image, mimeType } = payload;
         const dropdowns = getDropdowns(date);
-        const rules = getAIRules(date);
-        const cardMap = getCardMap(date);
-        const receiptData = extractReceiptWithClaude(base64Image, mimeType, dropdowns.categories, dropdowns.payments, rules, cardMap);
+        const receiptData = extractReceiptWithClaude(
+          base64Image, mimeType,
+          dropdowns.categories, dropdowns.payments,
+          getAIRules(date), getCardMap(date),
+        );
 
-        const { items } = receiptData;
-        const firstItem = items?.[0];
+        const receiptUrl = addReceipt(base64Image, mimeType, date);
+        const sharedDate = receiptData.date ?? payload.date;
+        const sharedPayment = receiptData.suggestedPayment ?? dropdowns.payments[0] ?? '';
 
-        if (!items || items.length <= 1) {
-          // Single item — existing auto-save logic
-          const allPresent = receiptData.date && firstItem?.amount != null && firstItem?.suggestedCategory;
-          if (allPresent) {
-            const receiptUrl = addReceipt(base64Image, mimeType, date);
-            const entry = addEntry({
-              date: receiptData.date!,
-              description: firstItem.description || receiptData.description || '',
-              amount: firstItem.amount!,
-              category: firstItem.suggestedCategory!,
-              payment: receiptData.suggestedPayment ?? dropdowns.payments[0] ?? '',
-              receiptUrl,
-            }, date);
-            return corsResponse({ ok: true, data: { autoSaved: true, entry } });
-          }
-          return corsResponse({ ok: true, data: { autoSaved: false, receiptData } });
+        if (!receiptData.items || receiptData.items.length <= 1) {
+          const item = receiptData.items?.[0];
+          const entry = addEntry({
+            date: sharedDate,
+            description: item?.description || receiptData.description || '',
+            amount: item?.amount ?? 0,
+            category: item?.suggestedCategory ?? '',
+            payment: sharedPayment,
+            receiptUrl,
+            needsVerification: !item?.amount || !item?.suggestedCategory,
+          }, date);
+          return corsResponse({ ok: true, data: { entry } });
         }
 
-        // Multiple items — save receipt to Drive, send to frontend for confirmation
-        const receiptUrl = addReceipt(base64Image, mimeType, date);
-        return corsResponse({ ok: true, data: { autoSaved: false, split: true, receiptData: { ...receiptData, receiptUrl } } });
+        // Multiple items — reverse so item[0] ends up at the top of the sheet after sequential insertions
+        const saved = [...receiptData.items].reverse().map(item =>
+          addEntry({
+            date: sharedDate,
+            description: item.description || receiptData.description || '',
+            amount: item.amount ?? 0,
+            category: item.suggestedCategory ?? '',
+            payment: sharedPayment,
+            receiptUrl,
+            needsVerification: !item.amount || !item.suggestedCategory,
+          }, date)
+        );
+        saved.reverse();
+        return corsResponse({ ok: true, data: { entries: saved } });
       }
 
       case 'addEntry': {
@@ -51,24 +61,6 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
         const receiptUrl = base64Image ? addReceipt(base64Image, mimeType, date) : undefined;
         const saved = addEntry({ ...entryPayload, receiptUrl }, date);
         return corsResponse({ ok: true, data: { entry: saved } });
-      }
-
-      case 'addSplitEntries': {
-        const { items, shared } = payload;
-        const entryDate = parseDate(shared.date);
-        // Reverse so that items[0] ends up at the top of the sheet after sequential insertions
-        const saved = [...items].reverse().map((item: { description: string; amount: number; category: string }) =>
-          addEntry({
-            date: shared.date,
-            description: item.description,
-            amount: item.amount,
-            category: item.category,
-            payment: shared.payment,
-            receiptUrl: shared.receiptUrl,
-          }, entryDate)
-        );
-        saved.reverse(); // restore original order for response
-        return corsResponse({ ok: true, data: { entries: saved } });
       }
 
       case 'updateEntry': {

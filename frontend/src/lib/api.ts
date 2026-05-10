@@ -22,21 +22,6 @@ export interface SavedEntry extends EntryPayload {
   rowId: number;
 }
 
-export interface LineItem {
-  description: string | null;
-  amount: number | null;
-  suggestedCategory: string | null;
-}
-
-export interface ReceiptData {
-  date: string | null;
-  description: string | null;
-  totalAmount: number | null;
-  suggestedPayment: string | null;
-  items: LineItem[];
-  receiptUrl?: string;
-}
-
 async function call<T>(action: string, payload?: Record<string, unknown>, date?: string): Promise<T> {
   const body: Record<string, unknown> = {
     token: getToken(),
@@ -63,19 +48,12 @@ export function extractReceipt(
   base64Image: string,
   mimeType: string,
   date: string,
-): Promise<{ autoSaved: boolean; split?: boolean; entry?: SavedEntry; receiptData?: ReceiptData }> {
+): Promise<{ entry?: SavedEntry; entries?: SavedEntry[] }> {
   return call('extractReceipt', { base64Image, mimeType }, date);
 }
 
 export function addEntry(entry: EntryPayload, date: string): Promise<{ entry: SavedEntry }> {
   return call('addEntry', { entry }, date);
-}
-
-export function addSplitEntries(
-  items: Array<{ description: string; amount: number; category: string }>,
-  shared: { date: string; payment: string; receiptUrl?: string },
-): Promise<{ entries: SavedEntry[] }> {
-  return call('addSplitEntries', { items, shared }, shared.date);
 }
 
 export function updateEntry(rowId: number, entry: Partial<EntryPayload>, date: string): Promise<{ entry: SavedEntry }> {

@@ -201,14 +201,15 @@ Apps Script (claude.ts)
   → items[] always has at least 1 element; splits only when clearly obvious from receipt or AI rule applies
 
 Apps Script (main.ts)
-  → single item: saves receipt to Drive; auto-saves if date + amount + category all present
-  → multiple items: saves receipt to Drive; returns all items to frontend for confirmation (never auto-saves)
-  → if required fields missing (single item): returns partial data, frontend shows entry form
+  → always uploads receipt to Drive
+  → single item: saves entry immediately with defaults for any unreadable fields (amount=0, category='')
+  → multiple items: saves all entries immediately in order; item[0] appears at top of sheet
+  → sets needsVerification=true on any entry where amount or category could not be read
 
 Frontend
-  → if auto-saved:   shows Audit screen (single entry)
-  → if split:        shows Split confirmation screen — editable items, sum validation, shared payment → addSplitEntries
-  → if fallback:     shows Entry form pre-populated, user completes and saves
+  → single entry: shows Audit screen ("Entry Saved") — Edit is optional
+  → split entries: shows Audit screen (list of N saved entries) — Edit per item is optional
+  → missing-field entries show ⚠ banner on Audit; user corrects via Edit → Entry form → Save
 ```
 
 **Cost**: negligible at personal-use scale using gemini-2.5-flash.
