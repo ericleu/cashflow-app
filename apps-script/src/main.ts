@@ -40,7 +40,10 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
           return corsResponse({ ok: true, data: { entry } });
         }
 
-        // Multiple items — reverse so item[0] ends up at the top of the sheet after sequential insertions
+        // Multiple items — reverse so item[0] ends up at the top of the sheet after sequential insertions.
+        // Each addEntry calls findFirstDateRow which returns the same row R every time (each save pushes
+        // the previous entry down by one), so all returned rowIds equal R. After reversing, we fix rowIds:
+        // item[k] is physically at row R+k.
         const saved = [...receiptData.items].reverse().map(item =>
           addEntry({
             date: sharedDate,
@@ -52,8 +55,10 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
             needsVerification: !item.amount || !item.suggestedCategory,
           }, date)
         );
+        const baseRowId = saved[saved.length - 1].rowId; // items[0] was saved last at row R
         saved.reverse();
-        return corsResponse({ ok: true, data: { entries: saved } });
+        const entries = saved.map((s, i) => ({ ...s, rowId: baseRowId + i }));
+        return corsResponse({ ok: true, data: { entries } });
       }
 
       case 'addEntry': {

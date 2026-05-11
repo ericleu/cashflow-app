@@ -7,6 +7,7 @@
 
   // ── Split summary ────────────────────────────────────────────────────────────
   function editSplitItem(e: SavedEntry) {
+    pendingEntry.set({ ...e });
     savedEntry.set(e);
     entryMode.set('edit');
     route.set('entry');
