@@ -107,7 +107,7 @@
 
       <div class="field">
         <label for="desc">Description</label>
-        <input id="desc" type="text" bind:value={description} placeholder="e.g. Lunch at Tim Hortons" />
+        <input id="desc" type="text" bind:value={description} placeholder="e.g. Tim Hortons — lunch" />
       </div>
 
       <div class="field">

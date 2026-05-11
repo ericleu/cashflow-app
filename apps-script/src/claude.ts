@@ -21,7 +21,7 @@ Extract the following and return ONLY valid JSON, no other text:
   "totalAmount": 47.23,
   "suggestedPayment": "Zelle",
   "items": [
-    { "description": "item group description", "amount": 47.23, "suggestedCategory": "食 - Groceries" }
+    { "description": "Merchant — item group description", "amount": 47.23, "suggestedCategory": "食 - Groceries" }
   ]
 }
 
@@ -42,6 +42,7 @@ Match suggestedPayment to the closest item from this list if the payment method 
 
 const RECEIPT_PROMPT_SUFFIX = `
 
+Each item description must start with the merchant name (e.g. "Walmart — produce", "Walmart — membership").
 If you cannot read a field clearly, return null for that field.
 Item amounts must sum exactly to totalAmount.
 Only set suggestedPayment if the payment method is clearly visible on the receipt — otherwise return null.

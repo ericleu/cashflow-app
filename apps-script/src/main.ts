@@ -26,11 +26,13 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
         const sharedDate = receiptData.date ?? payload.date;
         const sharedPayment = receiptData.suggestedPayment ?? dropdowns.payments[0] ?? '';
 
+        const merchant = receiptData.description ?? '';
+
         if (!receiptData.items || receiptData.items.length <= 1) {
           const item = receiptData.items?.[0];
           const entry = addEntry({
             date: sharedDate,
-            description: item?.description || receiptData.description || '',
+            description: buildDescription(merchant, item?.description ?? ''),
             amount: item?.amount ?? 0,
             category: item?.suggestedCategory ?? '',
             payment: sharedPayment,
@@ -47,7 +49,7 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
         const saved = [...receiptData.items].reverse().map(item =>
           addEntry({
             date: sharedDate,
-            description: item.description || receiptData.description || '',
+            description: buildDescription(merchant, item.description ?? ''),
             amount: item.amount ?? 0,
             category: item.suggestedCategory ?? '',
             payment: sharedPayment,
@@ -92,4 +94,18 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
 function parseDate(dateStr: string): Date {
   const [month, day, year] = dateStr.split('/').map(Number);
   return new Date(year, month - 1, day);
+}
+
+// Ensures descriptions always start with the merchant name.
+// "Walmart" + "produce" → "Walmart — produce"
+// "Walmart" + ""        → "Walmart"
+// "Walmart" + "Walmart" → "Walmart"
+// ""        + "produce" → "produce"
+function buildDescription(merchant: string, item: string): string {
+  const m = merchant.trim();
+  const d = item.trim();
+  if (!m) return d;
+  if (!d || d.toLowerCase() === m.toLowerCase()) return m;
+  if (d.toLowerCase().startsWith(m.toLowerCase())) return d;
+  return `${m} — ${d}`;
 }
