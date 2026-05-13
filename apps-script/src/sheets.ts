@@ -46,7 +46,14 @@ function updateEntry(rowId: number, entry: Partial<ExpenseEntry>, date: Date): S
   const detail = ss.getSheetByName('Detail');
   if (!detail) throw new Error("'Detail' tab not found");
 
-  const row = detail.getRange(rowId, 1, 1, 7).getValues()[0];
+  const range = detail.getRange(rowId, 1, 1, 7);
+  const row = range.getValues()[0];
+  const formulas = range.getFormulas()[0];
+
+  const existingReceiptUrl = (() => {
+    const match = formulas[1].match(/=HYPERLINK\("([^"]+)"/i);
+    return match ? match[1] : undefined;
+  })();
 
   const updated: ExpenseEntry = {
     date:        entry.date               ?? String(row[0]),
@@ -56,7 +63,7 @@ function updateEntry(rowId: number, entry: Partial<ExpenseEntry>, date: Date): S
     payment:     entry.payment            ?? String(row[4]),
     tag:         entry.tag                ?? String(row[5]),
     needsVerification: entry.needsVerification ?? (row[6] === 'yes'),
-    receiptUrl:  entry.receiptUrl,
+    receiptUrl:  entry.receiptUrl ?? existingReceiptUrl,
   };
 
   const description = updated.receiptUrl
