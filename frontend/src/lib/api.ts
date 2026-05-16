@@ -71,9 +71,11 @@ export function toApiDate(htmlDate: string): string {
 }
 
 // Convert MM/DD/YYYY (API) → YYYY-MM-DD (HTML date input)
+// Handles 2-digit years (e.g. from Gemini) by assuming 2000+.
 export function toHtmlDate(apiDate: string): string {
   const [m, d, y] = apiDate.split('/');
-  return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  const year = parseInt(y) < 100 ? 2000 + parseInt(y) : parseInt(y);
+  return `${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
 }
 
 // Today as YYYY-MM-DD

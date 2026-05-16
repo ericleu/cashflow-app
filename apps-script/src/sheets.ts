@@ -56,7 +56,9 @@ function updateEntry(rowId: number, entry: Partial<ExpenseEntry>, date: Date): S
   })();
 
   const updated: ExpenseEntry = {
-    date:        entry.date               ?? String(row[0]),
+    date:        entry.date               ?? (row[0] instanceof Date
+      ? Utilities.formatDate(row[0], Session.getScriptTimeZone(), 'MM/dd/yyyy')
+      : String(row[0])),
     description: entry.description        ?? String(row[1]),
     amount:      entry.amount             ?? Number(row[2]),
     category:    entry.category           ?? String(row[3]),

@@ -93,7 +93,9 @@ function doPost(e: GoogleAppsScript.Events.DoPost): GoogleAppsScript.Content.Tex
 
 function parseDate(dateStr: string): Date {
   const [month, day, year] = dateStr.split('/').map(Number);
-  return new Date(year, month - 1, day);
+  // JS Date(year, ...) treats 0–99 as 1900+year; expand 2-digit years to avoid that.
+  const fullYear = year < 100 ? 2000 + year : year;
+  return new Date(fullYear, month - 1, day);
 }
 
 // Ensures descriptions always start with the merchant name.
