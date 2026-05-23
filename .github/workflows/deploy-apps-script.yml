@@ -54,3 +54,7 @@ jobs:
       - name: Push to Apps Script
         working-directory: apps-script
         run: npx clasp push --force
+
+      - name: Deploy to Apps Script
+        working-directory: apps-script
+        run: npx clasp deploy --deploymentId ${{ secrets.APPS_SCRIPT_DEPLOYMENT_ID }} -d "CI $(date -u +%Y-%m-%dT%H:%M:%SZ)"
