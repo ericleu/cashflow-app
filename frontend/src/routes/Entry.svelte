@@ -34,7 +34,7 @@
   function formatAmount(): number {
     const n = parseFloat(amount);
     if (isNaN(n)) return 0;
-    return isIncome ? Math.abs(n) : -Math.abs(n);
+    return Math.abs(n);
   }
 
   async function save() {
