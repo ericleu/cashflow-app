@@ -226,14 +226,7 @@ Then re-run the failed workflow from the GitHub Actions tab.
 
 ## Branching
 
-This is a personal project — direct pushes to `main` are fine. If working on a larger feature, use a short-lived feature branch:
-
-```bash
-git checkout -b feat/receipt-scanning
-# work
-git push origin feat/receipt-scanning
-# open PR → merge → delete branch
-```
+This is a personal project — push directly to `main`. Each push deploys via GitHub Actions.
 
 ---
 

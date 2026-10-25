@@ -4,7 +4,10 @@
 .env
 .env.local
 .env.*.local
-.clasprc.json          # Google OAuth token — store in GHA secret, not repo
+# Google OAuth token — store in GHA secret, not repo
+.clasprc.json
+# local-only: credentials, scratch, AI notes
+.ai-docs/
 
 
 # =============================================================================
@@ -27,7 +30,8 @@ frontend/tsconfig.tsbuildinfo
 # APPS SCRIPT — clasp + TypeScript
 # =============================================================================
 apps-script/node_modules/
-apps-script/dist/         # compiled JS output before clasp push
+# compiled JS output before clasp push
+apps-script/dist/
 
 # clasp auth (project-level, if it exists alongside ~/.clasprc.json)
 apps-script/.clasprc.json
@@ -48,7 +52,8 @@ Desktop.ini
 
 # VS Code
 .vscode/*
-!.vscode/extensions.json   # keep shared extension recommendations
+# keep shared extension recommendations
+!.vscode/extensions.json
 
 # JetBrains / IntelliJ
 .idea/
